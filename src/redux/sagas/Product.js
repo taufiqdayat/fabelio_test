@@ -1,9 +1,18 @@
-import { fork, takeEvery, put, all } from "redux-saga/effects"
+import { fork, takeEvery, put, all, call } from "redux-saga/effects"
 import { GET_PRODUCT } from "../actionTypes"
+import { getListProductSuccess } from "../actions/Product"
+import { showMessage } from "../actions/Process"
+import prod from '../api/v1/Product';
+
+const doGetProduct = async()=>await prod.getProduct().then(resp=>resp).catch(error=>error)
 
 function* _getProduct(){
-    // function will be here
-    console.log("saga")
+    try{
+        const resp = yield call(doGetProduct)
+        yield put(getListProductSuccess(resp))
+    }catch(error){
+        yield put(showMessage("error api"))
+    }
 }
 
 export function* getProduct(){
