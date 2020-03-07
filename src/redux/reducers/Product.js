@@ -49,11 +49,38 @@ export default(state=INIT_STATE, action)=>{
                 all_product:data.products,
                 list_product:data.products,
                 furniture_styles:[...new_furniture_styles],
-                searchValue:""
+                searchValue:"",
+                delivery_time:[
+                    {
+                        name:"1 Week",
+                        select:false
+                    },
+                    {
+                        name:"2 Weeks",
+                        select:false
+                    },
+                    {
+                        name:"1 Month",
+                        select:false
+                    },
+                    {
+                        name:"More",
+                        select:false
+                    },
+                ],
             }
         case SEARCH_PRODUCT_SUCCESS:
             var searchkey = new RegExp(action.payload.searchVal.toLowerCase());
             var allData = action.payload.data.products;
+            let new_furniture_styles_search = []
+            if(action.payload.data.furniture_styles.length>0){
+                for (let id = 0; id < action.payload.data.furniture_styles.length; id++) {
+                    new_furniture_styles_search.push({
+                        name:action.payload.data.furniture_styles[id],
+                        select:false
+                    })
+                }
+            }
 
             var resSearch = allData.filter((el)=>{
                 return searchkey.test(el.name.toLowerCase());
@@ -62,7 +89,27 @@ export default(state=INIT_STATE, action)=>{
                 ...state,
                 list_product:resSearch,
                 all_product:resSearch,
-                searchValue:action.payload.searchVal.toLowerCase()
+                searchValue:action.payload.searchVal.toLowerCase(),
+                furniture_styles:[...new_furniture_styles_search],
+                delivery_time:[
+                    {
+                        name:"1 Week",
+                        select:false
+                    },
+                    {
+                        name:"2 Weeks",
+                        select:false
+                    },
+                    {
+                        name:"1 Month",
+                        select:false
+                    },
+                    {
+                        name:"More",
+                        select:false
+                    },
+                ],
+
             }
         case FILTER_PROD_STYLE:
             const {filterStyl} = action.payload;
