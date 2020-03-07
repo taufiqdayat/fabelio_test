@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import 'react-notifications/lib/notifications.css';
 import {connect} from 'react-redux';
-import {getListProduct} from './redux/actions';
+import { IoIosSearch } from "react-icons/io";
+import {getListProduct, searchListProduct} from './redux/actions';
+import { Button } from 'react-bootstrap';
 
 class MainApp extends Component {
 
@@ -14,15 +16,28 @@ class MainApp extends Component {
         this.props.getListProduct();
     }
 
+    doSearch(){
+        if(this.state.searchValue==""){
+            this.props.getListProduct();
+        }else{
+            this.props.searchListProduct(this.state.searchValue);
+        }
+    }
+
     render() {
-        const {list_product} = this.props;
+        const {list_product, searchListProduct} = this.props;
 
         return (
             <div className="container">
                 <div className="card text-white bg-primary" style={{marginTop:"50px", padding:"20px"}}>
                     <div className="row">
-                        <div className="col-sm-6">
+                        <div className="col-10 col-sm-6">
                             <input type="text" placeholder="Search Furniture" className="form-control" value={this.state.searchValue} onChange={(e)=>this.setState({searchValue:e.target.value})} style={{width:"100%"}} />
+                        </div>
+                        <div className="col-2 col-sm-2">
+                            <Button variant="success" onClick={()=>this.doSearch()}>
+                                <IoIosSearch />
+                            </Button>
                         </div>
                     </div>
                     <div className="row">
@@ -75,4 +90,4 @@ const mtp = ({prod}) => {
     return {list_product}
 }
 
-export default connect(mtp, {getListProduct}) (MainApp);
+export default connect(mtp, {getListProduct, searchListProduct}) (MainApp);
