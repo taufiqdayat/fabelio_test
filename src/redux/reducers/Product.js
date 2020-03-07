@@ -1,8 +1,30 @@
-import {GET_PRODUCT_SUCCESS, SEARCH_PRODUCT, FILTER_PROD_STYLE} from '../actionTypes';
+import {GET_PRODUCT_SUCCESS, FILTER_PROD_STYLE, SEARCH_PRODUCT_SUCCESS, FILTER_PROD_DELIV} from '../actionTypes';
 
 const INIT_STATE = {
+    ftrArr:[],
+    dlvArr:[],
     list_product:[],
+    list_after_filter_style:[],
+    list_after_filter_deliv:[],
     furniture_styles:[],
+    delivery_time:[
+        {
+            name:"1 Week",
+            select:false
+        },
+        {
+            name:"2 Weeks",
+            select:false
+        },
+        {
+            name:"1 Month",
+            select:false
+        },
+        {
+            name:"More",
+            select:false
+        },
+    ],
     all_product:[],
     searchValue:'',
 }
@@ -29,9 +51,9 @@ export default(state=INIT_STATE, action)=>{
                 furniture_styles:[...new_furniture_styles],
                 searchValue:""
             }
-        case SEARCH_PRODUCT:
+        case SEARCH_PRODUCT_SUCCESS:
             var searchkey = new RegExp(action.payload.searchVal.toLowerCase());
-            var allData = state.all_product;
+            var allData = action.payload.data.products;
 
             var resSearch = allData.filter((el)=>{
                 return searchkey.test(el.name.toLowerCase());
@@ -58,18 +80,102 @@ export default(state=INIT_STATE, action)=>{
                     return ftrArr.indexOf(cat) > -1;
                 }).length === ftrArr.length
             })
-            console.log(resFilStyle, 'oke')
 
-            if(ftrArr.length<1){
-                resFilStyle=state.all_product
+            let lastResFtr = [];
+
+            if (state.dlvArr.length<1) {
+                if(ftrArr.length<1){
+                    lastResFtr = state.all_product
+                }else{
+                    lastResFtr=resFilStyle
+                }
+            }else{
+                if(ftrArr.length<1){
+                    for (let jj = 0; jj < state.list_after_filter_deliv.length; jj++) {
+                        lastResFtr.push(state.list_after_filter_deliv[jj])}
+                }else{
+                    for (let jj = 0; jj < resFilStyle.length; jj++) {
+                        lastResFtr.push(
+                            ...(state.list_after_filter_deliv.filter((inner)=>inner.delivery_time===resFilStyle[jj].delivery_time)))
+                    }
+                }
             }
 
-            console.log(ftrArr.length, 'leng')
+            lastResFtr = lastResFtr.filter((el, id, self)=>{
+                return id === self.indexOf(el)
+            })
 
             return {
                 ...state,
                 furniture_styles:[...action.payload.filterStyl],
-                list_product:resFilStyle
+                list_after_filter_style:resFilStyle,
+                list_product:lastResFtr,
+                ftrArr:ftrArr
+            }
+        case FILTER_PROD_DELIV:
+            const {filterDeliv} = action.payload;
+
+            var dlvArr = filterDeliv.filter((ft)=>{
+                return ft.select===true
+            }).map((ft)=>{
+                return ft.name
+            })
+            
+            // var aaa = [...state.list_product]
+            var ddd = []
+
+            var resDevFilStyle = (days) =>{
+                let a = state.all_product.filter((el)=>{
+                    if(days=="1 Week"){
+                        return parseInt(el.delivery_time)  <= 7
+                    }else if(days=="2 Weeks"){
+                        return parseInt(el.delivery_time)  > 7 && parseInt(el.delivery_time) <= 14
+                    }else if(days=="1 Month"){
+                        return parseInt(el.delivery_time) > 14 && parseInt(el.delivery_time) <= 30
+                    }else if(days=="More"){
+                        return parseInt(el.delivery_time) > 30
+                    } else {
+                        return el
+                    }
+                })
+                return a.map(ll=> ll)
+            }
+
+            for (let ii = 0; ii < dlvArr.length; ii++) {
+                ddd.push(...resDevFilStyle(dlvArr[ii]))
+            }
+
+            let lastResDev = [];
+
+            if(state.ftrArr.length<1){
+                if(dlvArr.length<1){
+                    lastResDev = state.all_product
+                }else{
+                    lastResDev=ddd
+                }
+            }else{
+                if (dlvArr.length<1) {
+                    for (let jj = 0; jj < state.list_after_filter_style.length; jj++) {
+                        lastResDev.push(state.list_after_filter_style[jj])}
+                }else{
+                    for (let jj = 0; jj < ddd.length; jj++) {
+                        lastResDev.push(
+                            ...(state.list_after_filter_style.filter((inner)=>inner.delivery_time===ddd[jj].delivery_time)))
+                    }
+                }
+            }
+
+            lastResDev = lastResDev.filter((el, id, self)=>{
+                return id === self.indexOf(el)
+            })
+
+            console.log(lastResDev, "oke");
+            return {
+                ...state,
+                delivery_time:[...action.payload.filterDeliv],
+                list_after_filter_deliv:ddd,
+                list_product:lastResDev,
+                dlvArr:dlvArr
             }
         default:
             return state
