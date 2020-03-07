@@ -2,15 +2,16 @@ import React, { Component } from 'react';
 import 'react-notifications/lib/notifications.css';
 import {connect} from 'react-redux';
 import { IoIosSearch } from "react-icons/io";
-import {getListProduct, searchListProduct} from './redux/actions';
-import { Button } from 'react-bootstrap';
+import {getListProduct, searchListProduct, changeFilterProdStyle} from './redux/actions';
+import { Button, Accordion, useAccordionToggle, Card } from 'react-bootstrap';
 
 class MainApp extends Component {
 
     constructor(props){
         super(props);
         this.state = {
-            searchValue:""
+            searchValue:"",
+            coba:false,
         }
 
         this.props.getListProduct();
@@ -25,7 +26,7 @@ class MainApp extends Component {
     }
 
     render() {
-        const {list_product, searchListProduct} = this.props;
+        const {list_product, furniture_styles, changeFilterProdStyle} = this.props;
 
         return (
             <div className="container">
@@ -40,9 +41,36 @@ class MainApp extends Component {
                             </Button>
                         </div>
                     </div>
-                    <div className="row">
+                    <div className="row" style={{marginTop:"30px"}}>
                         <div className="col-sm-6">
-                            Filter style
+                        <Accordion defaultActiveKey="1">
+                            <Card>
+                                <Accordion.Toggle as={Button} variant="link" eventKey="0">
+                                    Furniture Style
+                                </Accordion.Toggle>
+                                <Accordion.Collapse eventKey="0">
+                                <div className="container" style={{color:"#212529"}}>
+                                {
+                                    furniture_styles.length>0
+                                    &&
+                                    furniture_styles.map((styl, idx)=>(
+                                        <div key={idx} style={{borderBottom:"1px solid #ccc", padding:"7px 0px", display:"flex", justifyContent:"space-between"}}>
+                                            <b>{styl.name}</b>
+                                            <input 
+                                                type="checkbox" 
+                                                onChange={(e)=>{
+                                                    furniture_styles[idx].select = e.target.checked;
+                                                    changeFilterProdStyle(furniture_styles);
+                                                }} 
+                                                checked={styl.select} 
+                                            />
+                                        </div>
+                                    ))
+                                }
+                                </div>
+                                </Accordion.Collapse>
+                            </Card>
+                        </Accordion>
                         </div>
                         <div className="col-sm-6">
                             filter Delivery time
@@ -86,8 +114,8 @@ class MainApp extends Component {
 }
 
 const mtp = ({prod}) => {
-    const {list_product} = prod;
-    return {list_product}
+    const {list_product, furniture_styles} = prod;
+    return {list_product, furniture_styles}
 }
 
-export default connect(mtp, {getListProduct, searchListProduct}) (MainApp);
+export default connect(mtp, {getListProduct, searchListProduct, changeFilterProdStyle}) (MainApp);
